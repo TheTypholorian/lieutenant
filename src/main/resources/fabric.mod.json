@@ -10,9 +10,6 @@
   "icon": "assets/lieutenant/icon.png",
   "environment": "*",
   "entrypoints": {
-    "fabric-datagen": [
-      "net.typho.lieutenant.client.LieutenantDataGenerator"
-    ],
     "client": [
       "net.typho.lieutenant.client.LieutenantClient"
     ],

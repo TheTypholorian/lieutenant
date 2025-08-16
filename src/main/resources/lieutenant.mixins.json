@@ -4,6 +4,7 @@
   "package": "net.typho.lieutenant.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "CommandSourceMixin"
   ],
   "client": [
     "ChatInputSuggestorWindowMixin"
