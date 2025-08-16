@@ -81,10 +81,10 @@ public class LieutenantClient implements ClientModInitializer {
         );
     }
 
-    public static Text fillReplacesTooltipText(RegistryKey<Block> target) {
+    public static Text selectReplaceTooltipText() {
         return Text.translatable(
-                "tooltip.lieutenant.fill_replaces",
-                blockTooltipText(target)
+                "tooltip.lieutenant.select_replace",
+                keyTooltipText(MinecraftClient.getInstance().options.useKey)
         );
     }
 

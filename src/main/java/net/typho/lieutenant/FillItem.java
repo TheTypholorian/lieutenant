@@ -1,11 +1,12 @@
 package net.typho.lieutenant;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -27,22 +28,29 @@ import net.typho.lieutenant.client.LieutenantClient;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem {
+public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem {
+    @Environment(EnvType.CLIENT)
+    public BlockPos target;
+    @Environment(EnvType.CLIENT)
+    public RegistryKey<Block> replace;
+
     public FillItem(Settings settings) {
         super(settings);
     }
 
     @Override
     public boolean setTarget(World world, BlockState block, BlockPos pos, PlayerEntity player, ItemStack stack) {
-        System.out.println("set target " + world.isClient);
-        boolean clear = player.isSneaking();
+        if (world.isClient) {
+            boolean clear = player.isSneaking();
 
-        if (clear && stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE) == null) {
-            return false;
+            if (clear && replace == null) {
+                return false;
+            }
+
+            replace = clear ? null : Registries.BLOCK.getKey(block.getBlock()).orElseThrow();
         }
-
-        stack.set(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE, clear ? null : Registries.BLOCK.getKey(block.getBlock()).orElseThrow());
 
         return true;
     }
@@ -52,7 +60,7 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
         return Text.translatable(
                 getTranslationKey(stack),
                 Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? LieutenantClient.blockTooltipText(block.getBlock()) : Text.translatable("item.lieutenant.fill.off_hand"),
-                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE)))
+                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(replace))
         );
     }
 
@@ -60,7 +68,7 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         tooltip.add(LieutenantClient.fillTooltipText());
         tooltip.add(LieutenantClient.selectTooltipText());
-        tooltip.add(LieutenantClient.fillReplacesTooltipText(stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE)));
+        tooltip.add(LieutenantClient.selectReplaceTooltipText());
         tooltip.add(LieutenantClient.permissionTooltipText(2));
     }
 
@@ -68,53 +76,35 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
 
-        if (!user.hasPermissionLevel(2)) {
-            return TypedActionResult.pass(stack);
-        }
+        if (world.isClient) {
+            if (!user.hasPermissionLevel(2)) {
+                return TypedActionResult.pass(stack);
+            }
 
-        HitResult hit = user.raycast(32, 1f, false);
+            HitResult hit = user.raycast(32, 1f, false);
 
-        if (hit instanceof BlockHitResult blockHit) {
-            BlockPos first = stack.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
-            BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
+            if (hit instanceof BlockHitResult blockHit) {
+                BlockPos selected = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
-            if (first == null) {
-                stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, target);
-
-                return TypedActionResult.success(stack);
-            } else {
-                stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, null);
-
-                ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
-                BlockState state;
-                ItemStack offStack = user.getOffHandStack();
-
-                if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
-                    state = blockItem.getBlock().getPlacementState(placement);
+                if (target == null) {
+                    target = selected;
                 } else {
-                    state = Blocks.AIR.getPlacementState(placement);
-                }
+                    ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
+                    BlockState state;
+                    ItemStack offStack = user.getOffHandStack();
 
-                BlockBox range = BlockBox.create(first, target);
-
-                if (state != null) {
-                    state = offStack.getOrDefault(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT).applyToState(state);
-                    RegistryKey<Block> replace = stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE);
-
-                    if (replace == null) {
-                        for (BlockPos blockPos : BlockPos.iterate(range.getMinX(), range.getMinY(), range.getMinZ(), range.getMaxX(), range.getMaxY(), range.getMaxZ())) {
-                            world.setBlockState(blockPos, state);
-                        }
+                    if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
+                        state = blockItem.getBlock().getPlacementState(placement);
                     } else {
-                        for (BlockPos blockPos : BlockPos.iterate(range.getMinX(), range.getMinY(), range.getMinZ(), range.getMaxX(), range.getMaxY(), range.getMaxZ())) {
-                            if (world.getBlockState(blockPos).matchesKey(replace)) {
-                                world.setBlockState(blockPos, state);
-                            }
-                        }
+                        state = Blocks.AIR.getPlacementState(placement);
                     }
 
-                    return TypedActionResult.success(stack);
+                    ClientPlayNetworking.send(new FillC2SPacket(BlockBox.create(target, selected), state, Optional.ofNullable(replace)));
+
+                    target = null;
                 }
+
+                return TypedActionResult.success(stack);
             }
         }
 
@@ -122,19 +112,26 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
     }
 
     @Override
+    public boolean pick(ItemStack held, ItemStack target, BlockState targetBlock, PlayerEntity player) {
+        replace = targetBlock.isAir() ? null : Registries.BLOCK.getKey(targetBlock.getBlock()).orElseThrow();
+        return true;
+    }
+
+    @Override
     public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
-        stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, null);
+        if (world.isClient) {
+            target = null;
+        }
     }
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos first = wand.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
         BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
 
-        if (first == null) {
+        if (this.target == null) {
             return new BlockBox(target);
         }
 
-        return BlockBox.create(first, target);
+        return BlockBox.create(this.target, target);
     }
 }
