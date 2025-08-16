@@ -84,7 +84,7 @@ public class LieutenantClient implements ClientModInitializer {
     public static Text selectReplaceTooltipText() {
         return Text.translatable(
                 "tooltip.lieutenant.select_replace",
-                keyTooltipText(MinecraftClient.getInstance().options.useKey)
+                keyTooltipText(MinecraftClient.getInstance().options.pickItemKey)
         );
     }
 

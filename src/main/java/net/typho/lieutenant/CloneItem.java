@@ -1,6 +1,9 @@
 package net.typho.lieutenant;
 
 import com.google.common.collect.Lists;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -29,6 +32,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class CloneItem extends Item implements DualSelectionItem {
+    @Environment(EnvType.CLIENT)
+    public BlockBox selection;
+
     public CloneItem(Settings settings) {
         super(settings);
     }
@@ -45,38 +51,34 @@ public class CloneItem extends Item implements DualSelectionItem {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
 
-        if (!user.hasPermissionLevel(2)) {
-            return TypedActionResult.pass(stack);
-        }
+        if (world.isClient) {
+            if (!user.hasPermissionLevel(2)) {
+                return TypedActionResult.pass(stack);
+            }
 
-        HitResult hit = user.raycast(32, 1f, false);
+            HitResult hit = user.raycast(32, 1f, false);
 
-        if (hit instanceof BlockHitResult blockHit) {
-            BlockBox box = stack.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
-            BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
+            if (hit instanceof BlockHitResult blockHit) {
+                BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
-            if (box == null) {
-                stack.set(Lieutenant.BOX_SELECTION_COMPONENT_TYPE, new BlockBox(target));
-                return TypedActionResult.success(stack);
-            } else if (box.getMinX() == box.getMaxX() && box.getMinY() == box.getMaxY() && box.getMinZ() == box.getMaxZ()) {
-                stack.set(Lieutenant.BOX_SELECTION_COMPONENT_TYPE, box.encompass(target));
-                return TypedActionResult.success(stack);
-            } else {
-                BlockBox targetBox = box.offset(target.getX() - box.getMinX(), target.getY() - box.getMinY(), target.getZ() - box.getMinZ());
+                if (selection == null) {
+                    selection = new BlockBox(target);
+                    return TypedActionResult.success(stack);
+                } else if (selection.getMinX() == selection.getMaxX() && selection.getMinY() == selection.getMaxY() && selection.getMinZ() == selection.getMaxZ()) {
+                    selection.encompass(target);
+                    return TypedActionResult.success(stack);
+                } else {
+                    BlockBox targetBox = selection.offset(target.getX() - selection.getMinX(), target.getY() - selection.getMinY(), target.getZ() - selection.getMinZ());
 
-                if (box.intersects(targetBox)) {
-                    user.sendMessage(Text.literal("Source and destination areas overlap").formatted(Formatting.RED), true);
-                    return TypedActionResult.fail(stack);
-                }
-
-                if (world instanceof ServerWorld server) {
-                    if (!execute(server, box, target)) {
-                        user.sendMessage(Text.literal("Failed clone").formatted(Formatting.RED), true);
+                    if (selection.intersects(targetBox)) {
+                        user.sendMessage(Text.literal("Source and destination areas overlap").formatted(Formatting.RED), true);
                         return TypedActionResult.fail(stack);
                     }
-                }
 
-                return TypedActionResult.success(stack);
+                    ClientPlayNetworking.send(new CloneC2SPacket(selection, target));
+
+                    return TypedActionResult.success(stack);
+                }
             }
         }
 
@@ -85,34 +87,34 @@ public class CloneItem extends Item implements DualSelectionItem {
 
     @Override
     public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
-        stack.set(Lieutenant.BOX_SELECTION_COMPONENT_TYPE, null);
+        if (world.isClient) {
+            selection = null;
+        }
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockBox box = wand.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
         BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
 
-        if (box == null) {
+        if (selection == null) {
             return new BlockBox(target);
-        } else if (box.getMinX() == box.getMaxX() && box.getMinY() == box.getMaxY() && box.getMinZ() == box.getMaxZ()) {
-            return new BlockBox(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ()).encompass(target);
+        } else if (selection.getMinX() == selection.getMaxX() && selection.getMinY() == selection.getMaxY() && selection.getMinZ() == selection.getMaxZ()) {
+            return new BlockBox(selection.getMinX(), selection.getMinY(), selection.getMinZ(), selection.getMaxX(), selection.getMaxY(), selection.getMaxZ()).encompass(target);
         }
 
-        return box;
+        return selection;
     }
 
     @Override
     public BlockBox getOtherSelection(PlayerEntity player, ItemStack stack, BlockHitResult blockHit) {
-        BlockBox box = stack.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
         BlockPos target = player.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
-        if (box == null || (box.getMinX() == box.getMaxX() && box.getMinY() == box.getMaxY() && box.getMinZ() == box.getMaxZ())) {
+        if (selection == null || (selection.getMinX() == selection.getMaxX() && selection.getMinY() == selection.getMaxY() && selection.getMinZ() == selection.getMaxZ())) {
             return null;
         }
 
-        return box.offset(target.getX() - box.getMinX(), target.getY() - box.getMinY(), target.getZ() - box.getMinZ());
+        return selection.offset(target.getX() - selection.getMinX(), target.getY() - selection.getMinY(), target.getZ() - selection.getMinZ());
     }
 
     @SuppressWarnings("deprecation")
