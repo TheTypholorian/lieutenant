@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "lieutenant",
+  "version": "${version}",
+  "name": "lieutenant",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/lieutenant/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "net.typho.lieutenant.client.LieutenantDataGenerator"
+    ],
+    "client": [
+      "net.typho.lieutenant.client.LieutenantClient"
+    ],
+    "main": [
+      "net.typho.lieutenant.Lieutenant"
+    ]
+  },
+  "mixins": [
+    "lieutenant.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
