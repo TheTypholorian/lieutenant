@@ -1,4 +1,9 @@
 {
   "item.lieutenant.fill": "/fill",
-  "item.lieutenant.clone": "/clone"
+  "item.lieutenant.clone": "/clone",
+  "tooltip.lieutenant.key": "[%s]",
+  "tooltip.lieutenant.fill": "§7Fills area between selected points with block in §6off-hand§7. If there is none, the area is §6cleared§7.",
+  "tooltip.lieutenant.clone": "§7Select an area to copy, then %s to paste the blocks.",
+  "tooltip.lieutenant.select": "§7Use %s§7 to select two locations. %s§7 to select the §6targeted block§7, otherwise selects the block's side",
+  "tooltip.lieutenant.permission": "§7§oRequires command permission level %s"
 }

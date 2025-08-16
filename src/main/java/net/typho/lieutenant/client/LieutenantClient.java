@@ -5,11 +5,14 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
@@ -36,6 +39,32 @@ public class LieutenantClient implements ClientModInitializer {
             context.drawItem(stack, 0, 0);
             matrices.pop();
         }
+    }
+
+    public static Text cloneTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.clone",
+                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.useKey)
+        );
+    }
+
+    public static Text selectTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.select",
+                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.useKey),
+                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.sneakKey)
+        );
+    }
+
+    public static Text permissionTooltipText(int level) {
+        return Text.translatable(
+                "tooltip.lieutenant.permission",
+                level
+        );
+    }
+
+    public static Text keyTooltipText(KeyBinding key) {
+        return Text.translatable("tooltip.lieutenant.key", Text.translatable(key.getBoundKeyTranslationKey()).getString()).formatted(Formatting.GOLD);
     }
 
     @Override

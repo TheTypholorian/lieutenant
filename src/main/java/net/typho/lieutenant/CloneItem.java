@@ -10,6 +10,7 @@ import net.minecraft.component.ComponentMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -22,6 +23,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.typho.lieutenant.client.LieutenantClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -29,6 +31,13 @@ import java.util.List;
 public class CloneItem extends Item implements DualSelectionItem {
     public CloneItem(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        tooltip.add(LieutenantClient.cloneTooltipText());
+        tooltip.add(LieutenantClient.selectTooltipText());
+        tooltip.add(LieutenantClient.permissionTooltipText(2));
     }
 
     @Override
@@ -44,7 +53,7 @@ public class CloneItem extends Item implements DualSelectionItem {
 
         if (hit instanceof BlockHitResult blockHit) {
             BlockBox box = stack.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
-            BlockPos target = user.isSneaking() ? blockHit.getBlockPos().offset(blockHit.getSide()) : blockHit.getBlockPos();
+            BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
             if (box == null) {
                 stack.set(Lieutenant.BOX_SELECTION_COMPONENT_TYPE, new BlockBox(target));
@@ -83,7 +92,7 @@ public class CloneItem extends Item implements DualSelectionItem {
     @SuppressWarnings("deprecation")
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
         BlockBox box = wand.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
-        BlockPos target = player.isSneaking() ? hit.getBlockPos().offset(hit.getSide()) : hit.getBlockPos();
+        BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
 
         if (box == null) {
             return new BlockBox(target);
@@ -97,7 +106,7 @@ public class CloneItem extends Item implements DualSelectionItem {
     @Override
     public BlockBox getOtherSelection(PlayerEntity player, ItemStack stack, BlockHitResult blockHit) {
         BlockBox box = stack.get(Lieutenant.BOX_SELECTION_COMPONENT_TYPE);
-        BlockPos target = player.isSneaking() ? blockHit.getBlockPos().offset(blockHit.getSide()) : blockHit.getBlockPos();
+        BlockPos target = player.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
         if (box == null || (box.getMinX() == box.getMaxX() && box.getMinY() == box.getMaxY() && box.getMinZ() == box.getMaxZ())) {
             return null;

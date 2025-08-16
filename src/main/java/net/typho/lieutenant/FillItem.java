@@ -9,6 +9,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -16,10 +18,20 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.typho.lieutenant.client.LieutenantClient;
+
+import java.util.List;
 
 public class FillItem extends Item implements SelectionItem {
     public FillItem(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        tooltip.add(Text.translatable("tooltip.lieutenant.fill"));
+        tooltip.add(LieutenantClient.selectTooltipText());
+        tooltip.add(LieutenantClient.permissionTooltipText(2));
     }
 
     @Override
@@ -34,7 +46,7 @@ public class FillItem extends Item implements SelectionItem {
 
         if (hit instanceof BlockHitResult blockHit) {
             BlockPos first = stack.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
-            BlockPos target = user.isSneaking() ? blockHit.getBlockPos().offset(blockHit.getSide()) : blockHit.getBlockPos();
+            BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
 
             if (first == null) {
                 stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, target);
@@ -78,7 +90,7 @@ public class FillItem extends Item implements SelectionItem {
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
         BlockPos first = wand.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
-        BlockPos target = player.isSneaking() ? hit.getBlockPos().offset(hit.getSide()) : hit.getBlockPos();
+        BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
 
         if (first == null) {
             return new BlockBox(target);
