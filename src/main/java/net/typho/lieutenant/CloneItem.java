@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class CloneItem extends Item implements DualSelectionItem {
+public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
     @Environment(EnvType.CLIENT)
     public BlockBox selection;
 
@@ -59,7 +59,7 @@ public class CloneItem extends Item implements DualSelectionItem {
             HitResult hit = user.raycast(32, 1f, false);
 
             if (hit instanceof BlockHitResult blockHit) {
-                BlockPos target = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
+                BlockPos target = getTarget(user, blockHit);
 
                 if (selection == null) {
                     selection = new BlockBox(target);
@@ -95,7 +95,7 @@ public class CloneItem extends Item implements DualSelectionItem {
     @Override
     @SuppressWarnings("deprecation")
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
+        BlockPos target = getTarget(player, hit);
 
         if (selection == null) {
             return new BlockBox(target);
@@ -108,7 +108,7 @@ public class CloneItem extends Item implements DualSelectionItem {
 
     @Override
     public BlockBox getOtherSelection(PlayerEntity player, ItemStack stack, BlockHitResult blockHit) {
-        BlockPos target = player.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
+        BlockPos target = getTarget(player, blockHit);
 
         if (selection == null || (selection.getMinX() == selection.getMaxX() && selection.getMinY() == selection.getMaxY() && selection.getMinZ() == selection.getMaxZ())) {
             return null;

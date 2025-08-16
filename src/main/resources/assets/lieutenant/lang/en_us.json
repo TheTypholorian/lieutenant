@@ -1,6 +1,5 @@
 {
   "item.lieutenant.fill": "/fill %s %s",
-  "item.lieutenant.fill.off_hand": "§4[off hand]",
   "item.lieutenant.fill.replace": "replace %s",
   "item.lieutenant.clone": "/clone",
   "tooltip.lieutenant.key": "[%s]",
@@ -10,5 +9,7 @@
   "tooltip.lieutenant.select_replace": "§7Use %s§7 to select which block to replace, or air for all blocks.",
   "tooltip.lieutenant.permission": "§7§oRequires command permission level %s",
   "tooltip.lieutenant.null_block": "§4All",
-  "tooltip.lieutenant.fill_replaces": "§7Replaces %s"
+  "tooltip.lieutenant.fill_replaces": "§7Replaces %s",
+  "key.lieutenant.select_self": "Select Self",
+  "category.lieutenant": "Lieutenant"
 }

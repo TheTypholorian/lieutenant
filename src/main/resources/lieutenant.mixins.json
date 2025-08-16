@@ -6,7 +6,8 @@
   "mixins": [
     "CloneCommandMixin",
     "CommandSourceMixin",
-    "FillCommandMixin"
+    "FillCommandMixin",
+    "PlayerEntityMixin"
   ],
   "client": [
     "ChatInputSuggestorWindowMixin",

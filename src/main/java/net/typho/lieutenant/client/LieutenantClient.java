@@ -4,6 +4,7 @@ import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.Block;
+import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
@@ -57,7 +58,7 @@ public class LieutenantClient implements ClientModInitializer {
             return Text.translatable("tooltip.lieutenant.null_block");
         }
 
-        return Text.translatable(block.getTranslationKey()).setStyle(Style.EMPTY.withColor(block.getDefaultMapColor().color));
+        return Text.translatable(block.getTranslationKey()).setStyle(Style.EMPTY.withColor(block.getDefaultMapColor() == MapColor.CLEAR ? -1 : block.getDefaultMapColor().color));
     }
 
     public static Text fillTooltipText() {

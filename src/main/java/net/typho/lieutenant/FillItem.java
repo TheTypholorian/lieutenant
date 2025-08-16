@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem {
+public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem {
     @Environment(EnvType.CLIENT)
     public BlockPos target;
     @Environment(EnvType.CLIENT)
@@ -59,7 +59,7 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
     public Text getName(ItemStack stack) {
         return Text.translatable(
                 getTranslationKey(stack),
-                Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? LieutenantClient.blockTooltipText(block.getBlock()) : Text.translatable("item.lieutenant.fill.off_hand"),
+                LieutenantClient.blockTooltipText(Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? block.getBlock() : Blocks.AIR),
                 Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(replace))
         );
     }
@@ -84,7 +84,7 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
             HitResult hit = user.raycast(32, 1f, false);
 
             if (hit instanceof BlockHitResult blockHit) {
-                BlockPos selected = user.isSneaking() ? blockHit.getBlockPos() : blockHit.getBlockPos().offset(blockHit.getSide());
+                BlockPos selected = getTarget(user, blockHit);
 
                 if (target == null) {
                     target = selected;
@@ -126,7 +126,7 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos target = player.isSneaking() ? hit.getBlockPos() : hit.getBlockPos().offset(hit.getSide());
+        BlockPos target = getTarget(player, hit);
 
         if (this.target == null) {
             return new BlockBox(target);
