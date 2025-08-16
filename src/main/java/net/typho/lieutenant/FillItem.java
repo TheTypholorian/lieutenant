@@ -1,7 +1,9 @@
 package net.typho.lieutenant;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,6 +12,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -21,16 +25,40 @@ import net.minecraft.world.World;
 import net.typho.lieutenant.client.LieutenantClient;
 
 import java.util.List;
+import java.util.Objects;
 
-public class FillItem extends Item implements SelectionItem {
+public class FillItem extends Item implements SelectionItem, BlockTargetItem {
     public FillItem(Settings settings) {
         super(settings);
     }
 
     @Override
+    public boolean setTarget(World world, BlockState block, BlockPos pos, PlayerEntity player, ItemStack stack) {
+        boolean clear = block.isAir() || player.isSneaking();
+
+        if (clear && stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE) == null) {
+            return false;
+        }
+
+        stack.set(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE, clear ? null : Registries.BLOCK.getKey(block.getBlock()).orElseThrow());
+
+        return true;
+    }
+
+    @Override
+    public Text getName(ItemStack stack) {
+        return Text.translatable(
+                getTranslationKey(stack),
+                Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? LieutenantClient.blockTooltipText(block.getBlock()) : Text.translatable("item.lieutenant.fill.off_hand"),
+                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE)))
+        );
+    }
+
+    @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        tooltip.add(Text.translatable("tooltip.lieutenant.fill"));
+        tooltip.add(LieutenantClient.fillTooltipText());
         tooltip.add(LieutenantClient.selectTooltipText());
+        tooltip.add(LieutenantClient.fillReplacesTooltipText(stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE)));
         tooltip.add(LieutenantClient.permissionTooltipText(2));
     }
 
@@ -69,9 +97,18 @@ public class FillItem extends Item implements SelectionItem {
 
                 if (state != null) {
                     state = offStack.getOrDefault(DataComponentTypes.BLOCK_STATE, BlockStateComponent.DEFAULT).applyToState(state);
+                    RegistryKey<Block> replace = stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE);
 
-                    for (BlockPos blockPos : BlockPos.iterate(range.getMinX(), range.getMinY(), range.getMinZ(), range.getMaxX(), range.getMaxY(), range.getMaxZ())) {
-                        world.setBlockState(blockPos, state);
+                    if (replace == null) {
+                        for (BlockPos blockPos : BlockPos.iterate(range.getMinX(), range.getMinY(), range.getMinZ(), range.getMaxX(), range.getMaxY(), range.getMaxZ())) {
+                            world.setBlockState(blockPos, state);
+                        }
+                    } else {
+                        for (BlockPos blockPos : BlockPos.iterate(range.getMinX(), range.getMinY(), range.getMinZ(), range.getMaxX(), range.getMaxY(), range.getMaxZ())) {
+                            if (world.getBlockState(blockPos).matchesKey(replace)) {
+                                world.setBlockState(blockPos, state);
+                            }
+                        }
                     }
 
                     return TypedActionResult.success(stack);

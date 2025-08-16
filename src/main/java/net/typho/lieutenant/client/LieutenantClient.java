@@ -3,6 +3,7 @@ package net.typho.lieutenant.client;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
@@ -11,6 +12,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -41,18 +44,47 @@ public class LieutenantClient implements ClientModInitializer {
         }
     }
 
+    public static Text keyTooltipText(KeyBinding key) {
+        return Text.translatable("tooltip.lieutenant.key", Text.translatable(key.getBoundKeyTranslationKey()).getString()).formatted(Formatting.GOLD);
+    }
+
+    public static Text blockTooltipText(RegistryKey<Block> target) {
+        return blockTooltipText(Registries.BLOCK.getOrEmpty(target).orElse(null));
+    }
+
+    public static Text blockTooltipText(Block block) {
+        if (block == null) {
+            return Text.translatable("tooltip.lieutenant.null_block");
+        }
+
+        return Text.translatable(block.getTranslationKey()).setStyle(Style.EMPTY.withColor(block.getDefaultMapColor().color));
+    }
+
+    public static Text fillTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.fill"
+        );
+    }
+
     public static Text cloneTooltipText() {
         return Text.translatable(
                 "tooltip.lieutenant.clone",
-                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.useKey)
+                keyTooltipText(MinecraftClient.getInstance().options.useKey)
         );
     }
 
     public static Text selectTooltipText() {
         return Text.translatable(
                 "tooltip.lieutenant.select",
-                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.useKey),
-                LieutenantClient.keyTooltipText(MinecraftClient.getInstance().options.sneakKey)
+                keyTooltipText(MinecraftClient.getInstance().options.useKey),
+                keyTooltipText(MinecraftClient.getInstance().options.sneakKey)
+        );
+    }
+
+    public static Text fillReplacesTooltipText(RegistryKey<Block> target) {
+        return Text.translatable(
+                "tooltip.lieutenant.fill_replaces",
+                blockTooltipText(target)
         );
     }
 
@@ -61,10 +93,6 @@ public class LieutenantClient implements ClientModInitializer {
                 "tooltip.lieutenant.permission",
                 level
         );
-    }
-
-    public static Text keyTooltipText(KeyBinding key) {
-        return Text.translatable("tooltip.lieutenant.key", Text.translatable(key.getBoundKeyTranslationKey()).getString()).formatted(Formatting.GOLD);
     }
 
     @Override

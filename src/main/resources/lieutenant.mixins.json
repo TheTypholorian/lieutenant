@@ -9,7 +9,8 @@
     "FillCommandMixin"
   ],
   "client": [
-    "ChatInputSuggestorWindowMixin"
+    "ChatInputSuggestorWindowMixin",
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1
