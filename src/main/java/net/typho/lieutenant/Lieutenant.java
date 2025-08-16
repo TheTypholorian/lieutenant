@@ -2,6 +2,8 @@ package net.typho.lieutenant;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
@@ -14,6 +16,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public class Lieutenant implements ModInitializer {
     public static final String MOD_ID = "lieutenant";
@@ -36,6 +39,24 @@ public class Lieutenant implements ModInitializer {
             }
 
             return ActionResult.PASS;
+        });
+        PayloadTypeRegistry.playC2S().register(FillC2SPacket.ID, FillC2SPacket.PACKET_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(FillC2SPacket.ID, (packet, context) -> {
+            if (context.player().hasPermissionLevel(2)) {
+                World world = context.player().getWorld();
+
+                if (packet.replace() == null) {
+                    for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
+                        world.setBlockState(blockPos, packet.fill());
+                    }
+                } else {
+                    for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
+                        if (world.getBlockState(blockPos).matchesKey(packet.replace())) {
+                            world.setBlockState(blockPos, packet.fill());
+                        }
+                    }
+                }
+            }
         });
     }
 }

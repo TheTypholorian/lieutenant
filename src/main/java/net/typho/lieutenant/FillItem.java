@@ -22,19 +22,21 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
 
 import java.util.List;
 import java.util.Objects;
 
-public class FillItem extends Item implements SelectionItem, BlockTargetItem {
+public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem {
     public FillItem(Settings settings) {
         super(settings);
     }
 
     @Override
     public boolean setTarget(World world, BlockState block, BlockPos pos, PlayerEntity player, ItemStack stack) {
-        boolean clear = block.isAir() || player.isSneaking();
+        System.out.println("set target " + world.isClient);
+        boolean clear = player.isSneaking();
 
         if (clear && stack.get(Lieutenant.BLOCK_TARGET_COMPONENT_TYPE) == null) {
             return false;
