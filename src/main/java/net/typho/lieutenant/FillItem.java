@@ -5,8 +5,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
-import net.minecraft.util.ActionResult;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -15,7 +17,7 @@ import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class FillItem extends Item {
+public class FillItem extends Item implements SelectionItem {
     public FillItem(Settings settings) {
         super(settings);
     }
@@ -28,24 +30,18 @@ public class FillItem extends Item {
             return TypedActionResult.pass(stack);
         }
 
-        if (user.isSneaking()) {
-            stack.set(Lieutenant.FILL_ITEM_COMPONENT_TYPE, null);
-
-            return TypedActionResult.success(stack);
-        }
-
         HitResult hit = user.raycast(32, 1f, false);
 
         if (hit instanceof BlockHitResult blockHit) {
-            BlockPos first = stack.get(Lieutenant.FILL_ITEM_COMPONENT_TYPE);
+            BlockPos first = stack.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
             BlockPos target = user.isSneaking() ? blockHit.getBlockPos().offset(blockHit.getSide()) : blockHit.getBlockPos();
 
             if (first == null) {
-                stack.set(Lieutenant.FILL_ITEM_COMPONENT_TYPE, target);
+                stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, target);
 
                 return TypedActionResult.success(stack);
             } else {
-                stack.set(Lieutenant.FILL_ITEM_COMPONENT_TYPE, null);
+                stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, null);
 
                 ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
                 BlockState state;
@@ -74,8 +70,14 @@ public class FillItem extends Item {
         return TypedActionResult.pass(stack);
     }
 
-    public static BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos first = wand.get(Lieutenant.FILL_ITEM_COMPONENT_TYPE);
+    @Override
+    public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
+        stack.set(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE, null);
+    }
+
+    @Override
+    public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
+        BlockPos first = wand.get(Lieutenant.SINGLE_SELECTION_COMPONENT_TYPE);
         BlockPos target = player.isSneaking() ? hit.getBlockPos().offset(hit.getSide()) : hit.getBlockPos();
 
         if (first == null) {

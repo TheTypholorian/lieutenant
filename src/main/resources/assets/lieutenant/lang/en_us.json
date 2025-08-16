@@ -1,3 +1,4 @@
 {
-  "item.lieutenant.fill": "/fill"
+  "item.lieutenant.fill": "/fill",
+  "item.lieutenant.clone": "/clone"
 }

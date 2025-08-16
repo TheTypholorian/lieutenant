@@ -2,10 +2,14 @@
   "schemaVersion": 1,
   "id": "lieutenant",
   "version": "${version}",
-  "name": "lieutenant",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "name": "Lieutenant",
+  "description": "A mod that makes commands easier",
+  "authors": [
+    "The Typhothanian"
+  ],
+  "contact": {
+    "homepage": "https://github.com/TheTypholorian/lieutenant"
+  },
   "license": "MIT",
   "icon": "assets/lieutenant/icon.png",
   "environment": "*",
@@ -24,5 +28,6 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}"
-  }
+  },
+  "accessWidener": "lieutenant.accesswidener"
 }
