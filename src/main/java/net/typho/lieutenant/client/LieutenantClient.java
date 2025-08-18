@@ -2,6 +2,7 @@ package net.typho.lieutenant.client;
 
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -9,6 +10,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -21,10 +23,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
 import net.typho.lieutenant.SelectionItem;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
 
 public class LieutenantClient implements ClientModInitializer {
+    public static final KeyBinding SELECT_SELF = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.lieutenant.select_self",
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_LEFT_ALT,
+            "category.lieutenant"
+    ));
+
     public static boolean hasSuggestionIcon(Suggestion suggestion) {
         Identifier id = Identifier.tryParse(suggestion.getText());
         return id != null && Registries.ITEM.containsId(id);

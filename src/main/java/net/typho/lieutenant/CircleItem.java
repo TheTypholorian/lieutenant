@@ -30,13 +30,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem {
+public class CircleItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem, AltScrollItem {
     @Environment(EnvType.CLIENT)
     public BlockPos target;
     @Environment(EnvType.CLIENT)
     public RegistryKey<Block> replace;
+    @Environment(EnvType.CLIENT)
+    public int radius = 3;
 
-    public FillItem(Settings settings) {
+    public CircleItem(Settings settings) {
         super(settings);
     }
 
@@ -70,6 +72,11 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
         tooltip.add(LieutenantClient.selectTooltipText());
         tooltip.add(LieutenantClient.selectReplaceTooltipText());
         tooltip.add(LieutenantClient.permissionTooltipText(2));
+    }
+
+    @Override
+    public void scroll(PlayerEntity player, ItemStack stack, double amount) {
+        radius = Math.max(radius - (int) Math.signum(amount), 0);
     }
 
     @Override

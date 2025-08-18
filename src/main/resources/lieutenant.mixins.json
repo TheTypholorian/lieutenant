@@ -6,8 +6,10 @@
   "mixins": [
     "CloneCommandMixin",
     "CommandSourceMixin",
+    "DrawCommandMixin",
     "FillCommandMixin",
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "PlayerInventoryMixin"
   ],
   "client": [
     "ChatInputSuggestorWindowMixin",

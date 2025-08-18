@@ -1,12 +1,9 @@
 package net.typho.lieutenant;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -18,20 +15,13 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.lwjgl.glfw.GLFW;
 
 public class Lieutenant implements ModInitializer {
     public static final String MOD_ID = "lieutenant";
 
-    public static final KeyBinding SELECT_SELF = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "key.lieutenant.select_self",
-            InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_LEFT_ALT,
-            "category.lieutenant"
-    ));
-
     public static final Item FILL_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "fill"), new FillItem(new Item.Settings().maxCount(1)));
     public static final Item CLONE_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "clone"), new CloneItem(new Item.Settings().maxCount(1)));
+    public static final Item DRAW_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "draw"), new CircleItem(new Item.Settings().maxCount(1)));
 
     @Override
     public void onInitialize() {
