@@ -10,13 +10,13 @@
     "EnchantCommandMixin",
     "FillCommandMixin",
     "PlayerEntityMixin",
-    "PlayerInventoryMixin",
     "TeleportCommandMixin"
   ],
   "client": [
     "ChatInputSuggestorWindowMixin",
     "InGameHudMixin",
-    "MinecraftClientMixin"
+    "MinecraftClientMixin",
+    "PlayerInventoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

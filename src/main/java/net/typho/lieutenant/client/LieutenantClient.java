@@ -1,9 +1,17 @@
 package net.typho.lieutenant.client;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.registry.CommandRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
 import net.minecraft.client.MinecraftClient;
@@ -12,19 +20,29 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.RegistryKeyArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
+import net.minecraft.world.gen.feature.PlacedFeature;
+import net.typho.lieutenant.Lieutenant;
 import net.typho.lieutenant.SelectionItem;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.lwjgl.glfw.GLFW;
 
+import java.lang.module.Configuration;
 import java.util.Objects;
 
 public class LieutenantClient implements ClientModInitializer {
@@ -71,6 +89,14 @@ public class LieutenantClient implements ClientModInitializer {
         return Text.translatable(block.getTranslationKey()).setStyle(Style.EMPTY.withColor(block.getDefaultMapColor() == MapColor.CLEAR ? -1 : block.getDefaultMapColor().color));
     }
 
+    public static Text featureTooltipText(RegistryKey<PlacedFeature> target) {
+        if (target == null) {
+            return Text.translatable("tooltip.lieutenant.null_feature");
+        }
+
+        return Text.literal(target.getValue().toString());
+    }
+
     public static Text fillTooltipText() {
         return Text.translatable(
                 "tooltip.lieutenant.fill"
@@ -106,6 +132,7 @@ public class LieutenantClient implements ClientModInitializer {
         );
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onInitializeClient() {
         WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register((context, hit) -> {
@@ -131,5 +158,18 @@ public class LieutenantClient implements ClientModInitializer {
 
             return true;
         });
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(
+                    LiteralArgumentBuilder.<FabricClientCommandSource>literal("featureToolSet")
+                            .then(
+                                    RequiredArgumentBuilder.<FabricClientCommandSource, RegistryKey<ConfiguredFeature<?, ?>>>argument("feature", RegistryKeyArgumentType.registryKey(RegistryKeys.CONFIGURED_FEATURE))
+                                            .executes(context -> {
+                                                Lieutenant.FEATURE_ITEM.feature = (RegistryKey<PlacedFeature>) context.getArgument("feature", RegistryKey.class);
+                                                return 1;
+                                            })
+                            )
+            );
+        });
+        Lieutenant.CIRCLE_ITEM.radius = 3;
     }
 }

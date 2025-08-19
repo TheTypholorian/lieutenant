@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class FillItem extends Item implements SelectionItem, BlockTargetItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem {
+public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem {
     @Environment(EnvType.CLIENT)
     public BlockPos target;
     @Environment(EnvType.CLIENT)
@@ -38,21 +38,6 @@ public class FillItem extends Item implements SelectionItem, BlockTargetItem, Al
 
     public FillItem(Settings settings) {
         super(settings);
-    }
-
-    @Override
-    public boolean setTarget(World world, BlockState block, BlockPos pos, PlayerEntity player, ItemStack stack) {
-        if (world.isClient) {
-            boolean clear = player.isSneaking();
-
-            if (clear && replace == null) {
-                return false;
-            }
-
-            replace = clear ? null : Registries.BLOCK.getKey(block.getBlock()).orElseThrow();
-        }
-
-        return true;
     }
 
     @Override

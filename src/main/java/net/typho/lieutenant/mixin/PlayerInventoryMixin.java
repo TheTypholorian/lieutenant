@@ -1,5 +1,7 @@
 package net.typho.lieutenant.mixin;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -13,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerInventory.class)
+@Environment(EnvType.CLIENT)
 public abstract class PlayerInventoryMixin {
     @Shadow
     public abstract ItemStack getMainHandStack();
@@ -29,6 +32,7 @@ public abstract class PlayerInventoryMixin {
     private void scrollInHotbar(double scrollAmount, CallbackInfo ci) {
         if (LieutenantClient.SELECT_SELF.isPressed() && getMainHandStack().getItem() instanceof AltScrollItem alt) {
             alt.scroll(player, getMainHandStack(), scrollAmount);
+            ci.cancel();
         }
     }
 }

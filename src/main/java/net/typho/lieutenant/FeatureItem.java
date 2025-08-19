@@ -16,6 +16,7 @@ import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -23,6 +24,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.feature.PlacedFeature;
 import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
 
@@ -30,15 +32,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CircleItem extends Item implements SelectionItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem, AltScrollItem {
+public class FeatureItem extends Item implements SelectionItem, AlwaysDisplayNameItem, TargetedItem {
     @Environment(EnvType.CLIENT)
-    public BlockPos target;
-    @Environment(EnvType.CLIENT)
-    public RegistryKey<Block> replace;
-    @Environment(EnvType.CLIENT)
-    public int radius;
+    public RegistryKey<PlacedFeature> feature;
 
-    public CircleItem(Settings settings) {
+    public FeatureItem(Settings settings) {
         super(settings);
     }
 
@@ -46,8 +44,7 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
     public Text getName(ItemStack stack) {
         return Text.translatable(
                 getTranslationKey(stack),
-                LieutenantClient.blockTooltipText(Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? block.getBlock() : Blocks.AIR),
-                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(replace))
+                Text.translatable("item.lieutenant.feature.feature", LieutenantClient.featureTooltipText(feature))
         );
     }
 
@@ -60,15 +57,15 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
     }
 
     @Override
-    public void scroll(PlayerEntity player, ItemStack stack, double amount) {
-        radius = Math.max(radius - (int) Math.signum(amount), 0);
-    }
-
-    @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
 
         if (world.isClient) {
+            if (feature == null) {
+                user.sendMessage(Text.translatable("error.lieutenant.no_feature").formatted(Formatting.RED), true);
+                return TypedActionResult.fail(stack);
+            }
+
             if (!user.hasPermissionLevel(2)) {
                 return TypedActionResult.pass(stack);
             }
@@ -76,25 +73,7 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
             HitResult hit = user.raycast(32, 1f, false);
 
             if (hit instanceof BlockHitResult blockHit) {
-                BlockPos selected = getTarget(user, blockHit);
-
-                if (target == null) {
-                    target = selected;
-                } else {
-                    ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
-                    BlockState state;
-                    ItemStack offStack = user.getOffHandStack();
-
-                    if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
-                        state = blockItem.getBlock().getPlacementState(placement);
-                    } else {
-                        state = Blocks.AIR.getPlacementState(placement);
-                    }
-
-                    ClientPlayNetworking.send(new FillC2SPacket(BlockBox.create(target, selected), state, Optional.ofNullable(replace)));
-
-                    target = null;
-                }
+                ClientPlayNetworking.send(new FeatureC2SPacket(getTarget(user, blockHit), feature));
 
                 return TypedActionResult.success(stack);
             }
@@ -104,26 +83,11 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
     }
 
     @Override
-    public boolean pick(ItemStack held, ItemStack target, BlockState targetBlock, PlayerEntity player) {
-        replace = targetBlock.isAir() && !player.isSneaking() ? null : Registries.BLOCK.getKey(targetBlock.getBlock()).orElseThrow();
-        return true;
-    }
-
-    @Override
     public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
-        if (world.isClient) {
-            target = null;
-        }
     }
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos target = getTarget(player, hit);
-
-        if (this.target == null) {
-            return new BlockBox(target);
-        }
-
-        return BlockBox.create(this.target, target);
+        return new BlockBox(getTarget(player, hit));
     }
 }

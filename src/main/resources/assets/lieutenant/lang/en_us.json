@@ -2,6 +2,9 @@
   "item.lieutenant.fill": "/fill %s %s",
   "item.lieutenant.fill.replace": "replace %s",
   "item.lieutenant.clone": "/clone",
+  "item.lieutenant.circle": "/circle",
+  "item.lieutenant.feature": "/place feature %s",
+  "item.lieutenant.feature.feature": "§7%s",
   "tooltip.lieutenant.key": "[%s]",
   "tooltip.lieutenant.fill": "§7Fills area between selected points with block in off-hand. If there is none, the area is cleared.",
   "tooltip.lieutenant.clone": "§7Select an area to copy, then %s to paste the blocks.",
@@ -9,7 +12,10 @@
   "tooltip.lieutenant.select_replace": "§7Use %s§7 to select which block to replace, or air for all blocks.",
   "tooltip.lieutenant.permission": "§7§oRequires command permission level %s",
   "tooltip.lieutenant.null_block": "§4All",
+  "tooltip.lieutenant.null_feature": "§4None",
   "tooltip.lieutenant.fill_replaces": "§7Replaces %s",
+  "error.lieutenant.clone_overlap": "Source and destination areas overlap",
+  "error.lieutenant.no_feature": "No selected feature to place",
   "key.lieutenant.select_self": "Select Self",
   "category.lieutenant": "Lieutenant"
 }

@@ -27,7 +27,7 @@ public class DrawCommandMixin {
     private static ArgumentBuilder<?, ?> register(LiteralArgumentBuilder<ServerCommandSource> instance, Predicate<ServerCommandSource> predicate, Operation<ArgumentBuilder<ServerCommandSource, ?>> original) {
         return original.call(instance, predicate).executes(context -> {
             if (context.getSource().getPlayer() != null) {
-                context.getSource().getPlayer().giveItemStack(new ItemStack(Lieutenant.DRAW_ITEM));
+                context.getSource().getPlayer().giveItemStack(new ItemStack(Lieutenant.CIRCLE_ITEM));
                 return 1;
             }
 

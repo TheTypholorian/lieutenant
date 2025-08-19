@@ -71,7 +71,7 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
                     BlockBox targetBox = selection.offset(target.getX() - selection.getMinX(), target.getY() - selection.getMinY(), target.getZ() - selection.getMinZ());
 
                     if (selection.intersects(targetBox)) {
-                        user.sendMessage(Text.literal("Source and destination areas overlap").formatted(Formatting.RED), true);
+                        user.sendMessage(Text.translatable("error.lieutenant.clone_overlap").formatted(Formatting.RED), true);
                         return TypedActionResult.fail(stack);
                     }
 
