@@ -2,3 +2,4 @@ accessWidener v2 named
 
 accessible field net/minecraft/client/gui/hud/InGameHud heldItemTooltipFade I
 accessible method net/minecraft/server/command/TeleportCommand execute (Lnet/minecraft/server/command/ServerCommandSource;Ljava/util/Collection;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/command/argument/PosArgument;Lnet/minecraft/command/argument/PosArgument;Lnet/minecraft/server/command/TeleportCommand$LookTarget;)I
+accessible field net/minecraft/client/gui/screen/ChatInputSuggestor maxSuggestionSize I

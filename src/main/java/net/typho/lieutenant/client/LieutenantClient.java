@@ -40,7 +40,7 @@ public class LieutenantClient implements ClientModInitializer {
         return id != null && Registries.ITEM.containsId(id);
     }
 
-    public static void renderSuggestionIcon(DrawContext context, int x, int y, int mouseX, int mouseY, Suggestion suggestion) {
+    public static void renderSuggestionIcon(DrawContext context, int x, int y, Suggestion suggestion) {
         Identifier id = Identifier.tryParse(suggestion.getText());
 
         if (id != null && Registries.ITEM.containsId(id)) {

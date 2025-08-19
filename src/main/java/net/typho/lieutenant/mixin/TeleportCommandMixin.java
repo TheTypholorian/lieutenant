@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Collections;
 
-@Mixin(TeleportCommand.class)
+@Mixin(value = TeleportCommand.class, remap = false)
 public abstract class TeleportCommandMixin {
     @WrapOperation(
             method = "register",
