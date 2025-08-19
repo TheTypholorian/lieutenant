@@ -7,9 +7,11 @@
     "CloneCommandMixin",
     "CommandSourceMixin",
     "DrawCommandMixin",
+    "EnchantCommandMixin",
     "FillCommandMixin",
     "PlayerEntityMixin",
-    "PlayerInventoryMixin"
+    "PlayerInventoryMixin",
+    "TeleportCommandMixin"
   ],
   "client": [
     "ChatInputSuggestorWindowMixin",
