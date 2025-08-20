@@ -2,7 +2,7 @@
   "item.lieutenant.fill": "/fill %s %s",
   "item.lieutenant.fill.replace": "replace %s",
   "item.lieutenant.clone": "/clone",
-  "item.lieutenant.circle": "/circle",
+  "item.lieutenant.circle": "/circle %s %s",
   "item.lieutenant.feature": "/place feature %s",
   "item.lieutenant.feature.feature": "§7%s",
   "tooltip.lieutenant.key": "[%s]",

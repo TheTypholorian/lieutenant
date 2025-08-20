@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -21,7 +20,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.PlacedFeature;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
 
 public class Lieutenant implements ModInitializer {
     public static final String MOD_ID = "lieutenant";
@@ -75,7 +74,7 @@ public class Lieutenant implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(FeatureC2SPacket.ID, (packet, context) -> {
             if (context.player().hasPermissionLevel(2)) {
                 ServerWorld world = (ServerWorld) context.player().getWorld();
-                PlacedFeature feature = world.getRegistryManager().get(RegistryKeys.PLACED_FEATURE).get(packet.feature());
+                ConfiguredFeature<?, ?> feature = world.getRegistryManager().get(RegistryKeys.CONFIGURED_FEATURE).get(packet.feature());
 
                 if (feature == null) {
                     context.player().sendMessage(Text.literal("Nonexistent feature " + packet.feature()).formatted(Formatting.RED), true);
