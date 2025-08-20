@@ -18,6 +18,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -43,6 +44,7 @@ public class Lieutenant implements ModInitializer {
             return ActionResult.PASS;
         });
         PayloadTypeRegistry.playC2S().register(FillC2SPacket.ID, FillC2SPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(CircleC2SPacket.ID, CircleC2SPacket.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(CloneC2SPacket.ID, CloneC2SPacket.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(FeatureC2SPacket.ID, FeatureC2SPacket.PACKET_CODEC);
         ServerPlayNetworking.registerGlobalReceiver(FillC2SPacket.ID, (packet, context) -> {
@@ -56,6 +58,28 @@ public class Lieutenant implements ModInitializer {
                 } else {
                     for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
                         if (world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
+                            world.setBlockState(blockPos, packet.fill());
+                        }
+                    }
+                }
+            }
+        });
+        ServerPlayNetworking.registerGlobalReceiver(CircleC2SPacket.ID, (packet, context) -> {
+            if (context.player().hasPermissionLevel(2)) {
+                World world = context.player().getWorld();
+
+                BlockBox box = new BlockBox(packet.pos()).expand(packet.radius());
+                double radius = packet.radius() * packet.radius();
+
+                if (packet.replace().isEmpty()) {
+                    for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
+                        if (blockPos.getSquaredDistance(packet.pos()) < radius) {
+                            world.setBlockState(blockPos, packet.fill());
+                        }
+                    }
+                } else {
+                    for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
+                        if (blockPos.getSquaredDistance(packet.pos()) < radius && world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
                             world.setBlockState(blockPos, packet.fill());
                         }
                     }

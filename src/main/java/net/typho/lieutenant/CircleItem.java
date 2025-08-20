@@ -5,8 +5,11 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.Registries;
@@ -18,6 +21,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
@@ -54,7 +58,7 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
     @Override
     public void scroll(PlayerEntity player, ItemStack stack, double amount) {
-        radius = Math.max(radius + (int) Math.signum(amount), 0);
+        radius = MathHelper.clamp(radius + (int) Math.signum(amount), 0, 256);
     }
 
     @Override
@@ -70,8 +74,17 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
             if (hit instanceof BlockHitResult blockHit) {
                 BlockPos target = getTarget(user, blockHit);
+                ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
+                BlockState state;
+                ItemStack offStack = user.getOffHandStack();
 
-                ClientPlayNetworking.send(new CircleC2SPacket(target, radius, Optional.ofNullable(replace)));
+                if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
+                    state = blockItem.getBlock().getPlacementState(placement);
+                } else {
+                    state = Blocks.AIR.getPlacementState(placement);
+                }
+
+                ClientPlayNetworking.send(new CircleC2SPacket(target, state, radius, Optional.ofNullable(replace)));
 
                 return TypedActionResult.success(stack);
             }
@@ -88,19 +101,10 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
     @Override
     public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
-        if (world.isClient) {
-            target = null;
-        }
     }
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos target = getTarget(player, hit);
-
-        if (this.target == null) {
-            return new BlockBox(target);
-        }
-
-        return BlockBox.create(this.target, target);
+        return new BlockBox(getTarget(player, hit));
     }
 }
