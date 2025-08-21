@@ -1,11 +1,7 @@
 package net.typho.lieutenant.client;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.Block;
@@ -16,12 +12,10 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.command.argument.RegistryKeyArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -122,7 +116,6 @@ public class LieutenantClient implements ClientModInitializer {
         );
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onInitializeClient() {
         WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register((context, hit) -> {
@@ -147,18 +140,6 @@ public class LieutenantClient implements ClientModInitializer {
             }
 
             return true;
-        });
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            dispatcher.register(
-                    LiteralArgumentBuilder.<FabricClientCommandSource>literal("featureToolSet")
-                            .then(
-                                    RequiredArgumentBuilder.<FabricClientCommandSource, RegistryKey<ConfiguredFeature<?, ?>>>argument("feature", RegistryKeyArgumentType.registryKey(RegistryKeys.CONFIGURED_FEATURE))
-                                            .executes(context -> {
-                                                Lieutenant.FEATURE_ITEM.feature = (RegistryKey<ConfiguredFeature<?, ?>>) context.getArgument("feature", RegistryKey.class);
-                                                return 1;
-                                            })
-                            )
-            );
         });
         Lieutenant.CIRCLE_ITEM.radius = 3;
     }

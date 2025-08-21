@@ -7,7 +7,7 @@ import net.typho.lieutenant.client.LieutenantClient;
 
 public interface TargetedItem {
     default BlockPos getTarget(PlayerEntity user, BlockHitResult hit) {
-        if (LieutenantClient.SELECT_SELF.isPressed()) {
+        if (canSelectSelf() && LieutenantClient.SELECT_SELF.isPressed()) {
             return user.getBlockPos();
         }
 
@@ -16,5 +16,9 @@ public interface TargetedItem {
         }
 
         return hit.getBlockPos().offset(hit.getSide());
+    }
+
+    default boolean canSelectSelf() {
+        return true;
     }
 }

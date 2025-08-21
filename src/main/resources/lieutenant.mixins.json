@@ -9,7 +9,9 @@
     "DrawCommandMixin",
     "EnchantCommandMixin",
     "FillCommandMixin",
+    "PlaceCommandMixin",
     "PlayerEntityMixin",
+    "RegistryLoaderMixin",
     "TeleportCommandMixin"
   ],
   "client": [

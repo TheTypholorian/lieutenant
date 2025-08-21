@@ -1,18 +1,14 @@
 package net.typho.lieutenant;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -91,7 +87,7 @@ public class Lieutenant implements ModInitializer {
                 World world = context.player().getWorld();
 
                 if (!CloneItem.execute((ServerWorld) world, packet.copy(), packet.paste())) {
-                    context.player().sendMessage(Text.literal("Failed clone").formatted(Formatting.RED), true);
+                    context.player().sendMessage(Text.translatable("error.lieutenant.failed_clone").formatted(Formatting.RED), true);
                 }
             }
         });
@@ -101,24 +97,11 @@ public class Lieutenant implements ModInitializer {
                 ConfiguredFeature<?, ?> feature = world.getRegistryManager().get(RegistryKeys.CONFIGURED_FEATURE).get(packet.feature());
 
                 if (feature == null) {
-                    context.player().sendMessage(Text.literal("Nonexistent feature " + packet.feature()).formatted(Formatting.RED), true);
+                    context.player().sendMessage(Text.translatable("error.lieutenant.feature_doesnt_exist" + packet.feature()).formatted(Formatting.RED), true);
                 } else if (!feature.generate(world, world.getChunkManager().getChunkGenerator(), world.random, packet.target())) {
-                    context.player().sendMessage(Text.literal("Couldn't generate feature").formatted(Formatting.RED), true);
+                    context.player().sendMessage(Text.translatable("error.lieutenant.generate_feature").formatted(Formatting.RED), true);
                 }
             }
-        });
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(LiteralArgumentBuilder.<ServerCommandSource>literal("featureTool")
-                    .executes(context -> {
-                        PlayerEntity player = context.getSource().getPlayer();
-
-                        if (player == null) {
-                            return 0;
-                        }
-
-                        player.giveItemStack(new ItemStack(Lieutenant.FEATURE_ITEM));
-                        return 1;
-                    }));
         });
     }
 }

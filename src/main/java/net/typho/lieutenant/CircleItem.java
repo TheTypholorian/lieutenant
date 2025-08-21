@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -27,6 +28,7 @@ import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class CircleItem extends Item implements SelectionItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem, AltScrollItem {
@@ -43,8 +45,9 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
     public Text getName(ItemStack stack) {
         return Text.translatable(
                 getTranslationKey(stack),
+                LieutenantClient.blockTooltipText(Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? block.getBlock() : Blocks.AIR),
                 radius,
-                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(replace))
+                LieutenantClient.blockTooltipText(replace)
         );
     }
 
@@ -105,6 +108,11 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        return new BlockBox(getTarget(player, hit));
+        return new BlockBox(getTarget(player, hit)).expand(radius);
+    }
+
+    @Override
+    public boolean canSelectSelf() {
+        return false;
     }
 }

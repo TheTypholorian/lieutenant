@@ -45,7 +45,7 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
         return Text.translatable(
                 getTranslationKey(stack),
                 LieutenantClient.blockTooltipText(Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? block.getBlock() : Blocks.AIR),
-                Text.translatable("item.lieutenant.fill.replace", LieutenantClient.blockTooltipText(replace))
+                LieutenantClient.blockTooltipText(replace)
         );
     }
 
