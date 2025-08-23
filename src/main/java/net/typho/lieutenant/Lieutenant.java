@@ -42,7 +42,8 @@ public class Lieutenant implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(FillC2SPacket.ID, FillC2SPacket.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(CircleC2SPacket.ID, CircleC2SPacket.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(CloneC2SPacket.ID, CloneC2SPacket.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(FeatureC2SPacket.ID, FeatureC2SPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(PlaceFeatureC2SPacket.ID, PlaceFeatureC2SPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(SetFeatureS2CPacket.ID, SetFeatureS2CPacket.PACKET_CODEC);
         ServerPlayNetworking.registerGlobalReceiver(FillC2SPacket.ID, (packet, context) -> {
             if (context.player().hasPermissionLevel(2)) {
                 World world = context.player().getWorld();
@@ -91,7 +92,7 @@ public class Lieutenant implements ModInitializer {
                 }
             }
         });
-        ServerPlayNetworking.registerGlobalReceiver(FeatureC2SPacket.ID, (packet, context) -> {
+        ServerPlayNetworking.registerGlobalReceiver(PlaceFeatureC2SPacket.ID, (packet, context) -> {
             if (context.player().hasPermissionLevel(2)) {
                 ServerWorld world = (ServerWorld) context.player().getWorld();
                 ConfiguredFeature<?, ?> feature = world.getRegistryManager().get(RegistryKeys.CONFIGURED_FEATURE).get(packet.feature());

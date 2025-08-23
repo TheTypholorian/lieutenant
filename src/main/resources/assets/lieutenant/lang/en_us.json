@@ -1,5 +1,5 @@
 {
-  "item.lieutenant.fill": "/fill %s %s replace %s",
+  "item.lieutenant.fill": "/fill %s replace %s",
   "item.lieutenant.clone": "/clone",
   "item.lieutenant.circle": "/circle %s %s replace %s",
   "item.lieutenant.feature": "/place feature %s",

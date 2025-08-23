@@ -3,6 +3,7 @@ package net.typho.lieutenant.client;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
@@ -25,6 +26,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.typho.lieutenant.Lieutenant;
 import net.typho.lieutenant.SelectionItem;
+import net.typho.lieutenant.SetFeatureS2CPacket;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -141,6 +143,7 @@ public class LieutenantClient implements ClientModInitializer {
 
             return true;
         });
+        ClientPlayNetworking.registerGlobalReceiver(SetFeatureS2CPacket.ID, (packet, context) -> Lieutenant.FEATURE_ITEM.feature = packet.feature());
         Lieutenant.CIRCLE_ITEM.radius = 3;
     }
 }
