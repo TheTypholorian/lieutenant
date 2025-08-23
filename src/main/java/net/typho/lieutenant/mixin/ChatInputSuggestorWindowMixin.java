@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -34,12 +35,13 @@ public abstract class ChatInputSuggestorWindowMixin {
     @Shadow
     private int inWindowIndex;
 
-    @Shadow public abstract void scroll(int offset);
-
-    @Shadow public abstract void select(int index);
+    @Shadow
+    public abstract void select(int index);
 
     @Unique
     private boolean hasIcons = false;
+    @Unique
+    private boolean hasScroll = false;
 
     @Unique
     private ChatInputSuggestor parent;
@@ -51,6 +53,7 @@ public abstract class ChatInputSuggestorWindowMixin {
     private void init(ChatInputSuggestor parent, int x, int y, int width, List<Suggestion> suggestions, boolean narrateFirstSuggestion, CallbackInfo ci) {
         this.parent = parent;
         hasIcons = suggestions.stream().anyMatch(LieutenantClient::hasSuggestionIcon);
+        hasScroll = suggestions.size() > parent.maxSuggestionSize;
     }
 
     @Inject(
@@ -60,8 +63,33 @@ public abstract class ChatInputSuggestorWindowMixin {
                     target = "Lnet/minecraft/client/gui/DrawContext;drawTextWithShadow(Lnet/minecraft/client/font/TextRenderer;Ljava/lang/String;III)I"
             )
     )
-    private void render(DrawContext context, int mouseX, int mouseY, CallbackInfo ci, @Local(name = "l") int l) {
+    private void renderIcons(DrawContext context, int mouseX, int mouseY, CallbackInfo ci, @Local(name = "l") int l) {
         LieutenantClient.renderSuggestionIcon(context, area.getX() - 4, area.getY() - 5 + 12 * l, suggestions.get(l + inWindowIndex));
+    }
+
+    @Inject(
+            method = "render",
+            at = @At("TAIL")
+    )
+    private void renderScroll(DrawContext context, int mouseX, int mouseY, CallbackInfo ci) {
+        if (hasScroll) {
+            LieutenantClient.renderScrollBar(context, area.getX(), area.getY(), 2, area.getHeight(), inWindowIndex, suggestions.size() - parent.maxSuggestionSize);
+        }
+    }
+
+    @Inject(
+            method = "mouseClicked",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ChatInputSuggestor$SuggestionWindow;select(I)V"
+            ),
+            cancellable = true
+    )
+    private void mouseClicked(int x, int y, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (hasScroll && x - area.getX() < 2) {
+            inWindowIndex = (int) ((float) (y - area.getY()) / area.getHeight() * (suggestions.size() - parent.maxSuggestionSize));
+            cir.cancel();
+        }
     }
 
     @WrapOperation(
@@ -73,11 +101,17 @@ public abstract class ChatInputSuggestorWindowMixin {
             )
     )
     private int offsetX(Rect2i instance, Operation<Integer> original, @Local Suggestion suggestion) {
+        int x = original.call(instance);
+
         if (hasIcons) {
-            return original.call(instance) + 14;
+            x += 14;
         }
 
-        return original.call(instance);
+        if (hasScroll) {
+            x += 2;
+        }
+
+        return x;
     }
 
     @ModifyArg(
@@ -88,9 +122,13 @@ public abstract class ChatInputSuggestorWindowMixin {
             ),
             index = 2
     )
-    private int offsetWidth(int w, @Local(argsOnly = true) List<Suggestion> suggestions) {
-        if (suggestions.stream().anyMatch(LieutenantClient::hasSuggestionIcon)) {
-            return w + 14;
+    private int offsetWidth(int w) {
+        if (hasIcons) {
+            w += 14;
+        }
+
+        if (hasScroll) {
+            w += 2;
         }
 
         return w;
@@ -105,11 +143,28 @@ public abstract class ChatInputSuggestorWindowMixin {
             index = 0
     )
     private int offsetX(int w, @Local(argsOnly = true) List<Suggestion> suggestions) {
-        if (suggestions.stream().anyMatch(LieutenantClient::hasSuggestionIcon)) {
-            return w - 14;
+        if (hasIcons) {
+            w -= 14;
+        }
+
+        if (hasScroll) {
+            w -= 2;
         }
 
         return w;
+    }
+
+    @ModifyVariable(
+            method = "mouseScrolled",
+            at = @At("HEAD"),
+            argsOnly = true
+    )
+    private double amount(double value) {
+        if (MinecraftClient.getInstance().options.sprintKey.isPressed()) {
+            return value * 3;
+        }
+
+        return value;
     }
 
     @Inject(
