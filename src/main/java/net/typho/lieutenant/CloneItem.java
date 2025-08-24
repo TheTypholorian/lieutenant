@@ -26,17 +26,28 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
+public class CloneItem extends Item implements DualSelectionItem, TargetedItem, AltScrollItem, AlwaysDisplayNameItem {
     @Environment(EnvType.CLIENT)
     public BlockBox selection;
+    @Environment(EnvType.CLIENT)
+    public CloneType type;
 
     public CloneItem(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public Text getName(ItemStack stack) {
+        return Text.translatable(
+                getTranslationKey(stack),
+                Text.translatable(type.getTranslationKey())
+        );
     }
 
     @Override
@@ -75,7 +86,7 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
                         return TypedActionResult.fail(stack);
                     }
 
-                    ClientPlayNetworking.send(new CloneC2SPacket(selection, target));
+                    ClientPlayNetworking.send(new CloneC2SPacket(selection, target, type));
 
                     return TypedActionResult.success(stack);
                 }
@@ -117,8 +128,13 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
         return selection.offset(target.getX() - selection.getMinX(), target.getY() - selection.getMinY(), target.getZ() - selection.getMinZ());
     }
 
+    @Override
+    public void scroll(PlayerEntity player, ItemStack stack, double amount) {
+        type = Math.signum(amount) == 1 ? type.prev() : type.next();
+    }
+
     @SuppressWarnings("deprecation")
-    public static boolean execute(ServerWorld serverWorld, BlockBox sourceBox, BlockPos destination) {
+    public static boolean execute(ServerWorld serverWorld, BlockBox sourceBox, BlockPos destination, CloneType type) {
         record BlockEntityInfo(NbtCompound nbt, ComponentMap components) {
         }
 
@@ -129,9 +145,9 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
         BlockBox blockBox2 = BlockBox.create(destination, blockPos4);
 
         if (serverWorld.isRegionLoaded(sourceBox.getMinX(), sourceBox.getMinY(), sourceBox.getMinZ(), sourceBox.getMaxX(), sourceBox.getMaxY(), sourceBox.getMaxZ())) {
-            List<BlockInfo> list = Lists.newArrayList();
-            List<BlockInfo> list2 = Lists.newArrayList();
-            List<BlockInfo> list3 = Lists.newArrayList();
+            List<BlockInfo> list = Lists.newLinkedList();
+            List<BlockInfo> list2 = Lists.newLinkedList();
+            List<BlockInfo> list3 = Lists.newLinkedList();
             BlockPos blockPos5 = new BlockPos(
                     blockBox2.getMinX() - sourceBox.getMinX(), blockBox2.getMinY() - sourceBox.getMinY(), blockBox2.getMinZ() - sourceBox.getMinZ()
             );
@@ -144,22 +160,24 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem {
                         CachedBlockPosition cachedBlockPosition = new CachedBlockPosition(serverWorld, blockPos6, false);
                         BlockState blockState = cachedBlockPosition.getBlockState();
 
-                        BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
-                        if (blockEntity != null) {
-                            BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                    blockEntity.createComponentlessNbt(serverWorld.getRegistryManager()), blockEntity.getComponents()
-                            );
-                            list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                        } else if (!blockState.isOpaqueFullCube(serverWorld, blockPos6) && !blockState.isFullCube(serverWorld, blockPos6)) {
-                            list3.add(new BlockInfo(blockPos7, blockState, null));
-                        } else {
-                            list.add(new BlockInfo(blockPos7, blockState, null));
+                        if (type.test(blockState)) {
+                            BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
+                            if (blockEntity != null) {
+                                BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                        blockEntity.createComponentlessNbt(serverWorld.getRegistryManager()), blockEntity.getComponents()
+                                );
+                                list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                            } else if (!blockState.isOpaqueFullCube(serverWorld, blockPos6) && !blockState.isFullCube(serverWorld, blockPos6)) {
+                                list3.add(new BlockInfo(blockPos7, blockState, null));
+                            } else {
+                                list.add(new BlockInfo(blockPos7, blockState, null));
+                            }
                         }
                     }
                 }
             }
 
-            List<BlockInfo> list4 = Lists.newArrayList();
+            List<BlockInfo> list4 = Lists.newLinkedList();
             list4.addAll(list);
             list4.addAll(list2);
             list4.addAll(list3);

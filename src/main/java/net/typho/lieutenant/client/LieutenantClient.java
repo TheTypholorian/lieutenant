@@ -26,6 +26,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
+import net.typho.lieutenant.CloneType;
 import net.typho.lieutenant.Lieutenant;
 import net.typho.lieutenant.SelectionItem;
 import net.typho.lieutenant.SetFeatureS2CPacket;
@@ -212,6 +213,25 @@ public class LieutenantClient implements ClientModInitializer {
         );
     }
 
+    public static Text circleTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.circle"
+        );
+    }
+
+    public static Text featureTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.feature"
+        );
+    }
+
+    public static Text radiusTooltipText() {
+        return Text.translatable(
+                "tooltip.lieutenant.radius",
+                keyTooltipText(LieutenantClient.SELECT_SELF)
+        );
+    }
+
     public static Text selectTooltipText() {
         return Text.translatable(
                 "tooltip.lieutenant.select",
@@ -261,5 +281,6 @@ public class LieutenantClient implements ClientModInitializer {
         });
         ClientPlayNetworking.registerGlobalReceiver(SetFeatureS2CPacket.ID, (packet, context) -> Lieutenant.FEATURE_ITEM.feature = packet.feature());
         Lieutenant.CIRCLE_ITEM.radius = 3;
+        Lieutenant.CLONE_ITEM.type = CloneType.INSERT;
     }
 }

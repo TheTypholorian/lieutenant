@@ -10,7 +10,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.Registries;
@@ -74,17 +73,10 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
                 if (target == null) {
                     target = selected;
                 } else {
-                    ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
-                    BlockState state;
                     ItemStack offStack = user.getOffHandStack();
+                    RegistryKey<Block> fill = Registries.BLOCK.getKey(!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem ? blockItem.getBlock() : Blocks.AIR).orElseThrow();
 
-                    if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
-                        state = blockItem.getBlock().getPlacementState(placement);
-                    } else {
-                        state = Blocks.AIR.getPlacementState(placement);
-                    }
-
-                    ClientPlayNetworking.send(new FillC2SPacket(BlockBox.create(target, selected), state, Optional.ofNullable(replace)));
+                    ClientPlayNetworking.send(new FillC2SPacket(BlockBox.create(target, selected), fill, Optional.ofNullable(replace)));
 
                     target = null;
                 }

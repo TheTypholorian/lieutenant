@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -18,7 +17,11 @@ public record PlaceFeatureC2SPacket(BlockPos target, RegistryKey<ConfiguredFeatu
             BlockPos.CODEC.fieldOf("target").forGetter(PlaceFeatureC2SPacket::target),
             RegistryKey.createCodec(RegistryKeys.CONFIGURED_FEATURE).fieldOf("feature").forGetter(PlaceFeatureC2SPacket::feature)
     ).apply(instance, PlaceFeatureC2SPacket::new));
-    public static final PacketCodec<PacketByteBuf, PlaceFeatureC2SPacket> PACKET_CODEC = PacketCodecs.codec(CODEC.codec()).cast();
+    public static final PacketCodec<PacketByteBuf, PlaceFeatureC2SPacket> PACKET_CODEC = PacketCodec.tuple(
+            BlockPos.PACKET_CODEC, PlaceFeatureC2SPacket::target,
+            RegistryKey.createPacketCodec(RegistryKeys.CONFIGURED_FEATURE), PlaceFeatureC2SPacket::feature,
+            PlaceFeatureC2SPacket::new
+    );
 
     @Override
     public Id<? extends CustomPayload> getId() {

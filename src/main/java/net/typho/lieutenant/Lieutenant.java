@@ -4,8 +4,13 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
@@ -19,8 +24,20 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 
+import java.util.Optional;
+
 public class Lieutenant implements ModInitializer {
     public static final String MOD_ID = "lieutenant";
+
+    public static final PacketCodec<PacketByteBuf, BlockBox> BLOCK_BOX_PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.INTEGER, BlockBox::getMinX,
+            PacketCodecs.INTEGER, BlockBox::getMinY,
+            PacketCodecs.INTEGER, BlockBox::getMinZ,
+            PacketCodecs.INTEGER, BlockBox::getMaxX,
+            PacketCodecs.INTEGER, BlockBox::getMaxY,
+            PacketCodecs.INTEGER, BlockBox::getMaxZ,
+            BlockBox::new
+    );
 
     public static final FillItem FILL_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "fill"), new FillItem(new Item.Settings().maxCount(1)));
     public static final CloneItem CLONE_ITEM = Registry.register(Registries.ITEM, Identifier.of(MOD_ID, "clone"), new CloneItem(new Item.Settings().maxCount(1)));
@@ -47,15 +64,22 @@ public class Lieutenant implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(FillC2SPacket.ID, (packet, context) -> {
             if (context.player().hasPermissionLevel(2)) {
                 World world = context.player().getWorld();
+                Optional<Block> fill = Registries.BLOCK.getOrEmpty(packet.fill());
 
-                if (packet.replace().isEmpty()) {
-                    for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
-                        world.setBlockState(blockPos, packet.fill());
-                    }
+                if (fill.isEmpty()) {
+                    context.player().sendMessage(Text.translatable("error.lieutenant.nonexistent_block", packet.fill()).formatted(Formatting.RED), true);
                 } else {
-                    for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
-                        if (world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
-                            world.setBlockState(blockPos, packet.fill());
+                    BlockState state = fill.get().getDefaultState();
+
+                    if (packet.replace().isEmpty()) {
+                        for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
+                            world.setBlockState(blockPos, state);
+                        }
+                    } else {
+                        for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
+                            if (world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
+                                world.setBlockState(blockPos, state);
+                            }
                         }
                     }
                 }
@@ -64,20 +88,27 @@ public class Lieutenant implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(CircleC2SPacket.ID, (packet, context) -> {
             if (context.player().hasPermissionLevel(2)) {
                 World world = context.player().getWorld();
+                Optional<Block> fill = Registries.BLOCK.getOrEmpty(packet.fill());
 
-                BlockBox box = new BlockBox(packet.pos()).expand(packet.radius());
-                double radius = packet.radius() * packet.radius();
-
-                if (packet.replace().isEmpty()) {
-                    for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
-                        if (blockPos.getSquaredDistance(packet.pos()) < radius) {
-                            world.setBlockState(blockPos, packet.fill());
-                        }
-                    }
+                if (fill.isEmpty()) {
+                    context.player().sendMessage(Text.translatable("error.lieutenant.nonexistent_block", packet.fill()).formatted(Formatting.RED), true);
                 } else {
-                    for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
-                        if (blockPos.getSquaredDistance(packet.pos()) < radius && world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
-                            world.setBlockState(blockPos, packet.fill());
+                    BlockState state = fill.get().getDefaultState();
+
+                    BlockBox box = new BlockBox(packet.pos()).expand(packet.radius());
+                    double radius = packet.radius() * packet.radius();
+
+                    if (packet.replace().isEmpty()) {
+                        for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
+                            if (blockPos.getSquaredDistance(packet.pos()) < radius) {
+                                world.setBlockState(blockPos, state);
+                            }
+                        }
+                    } else {
+                        for (BlockPos blockPos : BlockPos.iterate(box.getMinX(), box.getMinY(), box.getMinZ(), box.getMaxX(), box.getMaxY(), box.getMaxZ())) {
+                            if (blockPos.getSquaredDistance(packet.pos()) < radius && world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
+                                world.setBlockState(blockPos, state);
+                            }
                         }
                     }
                 }
@@ -87,7 +118,7 @@ public class Lieutenant implements ModInitializer {
             if (context.player().hasPermissionLevel(2)) {
                 World world = context.player().getWorld();
 
-                if (!CloneItem.execute((ServerWorld) world, packet.copy(), packet.paste())) {
+                if (!CloneItem.execute((ServerWorld) world, packet.copy(), packet.paste(), packet.type())) {
                     context.player().sendMessage(Text.translatable("error.lieutenant.failed_clone").formatted(Formatting.RED), true);
                 }
             }

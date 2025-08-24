@@ -40,7 +40,7 @@ public class FeatureItem extends Item implements SelectionItem, AlwaysDisplayNam
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        tooltip.add(LieutenantClient.fillTooltipText());
+        tooltip.add(LieutenantClient.featureTooltipText());
         tooltip.add(LieutenantClient.selectTooltipText());
         tooltip.add(LieutenantClient.selectReplaceTooltipText());
         tooltip.add(LieutenantClient.permissionTooltipText(2));

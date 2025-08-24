@@ -10,7 +10,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.Registries;
@@ -53,7 +52,8 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        tooltip.add(LieutenantClient.fillTooltipText());
+        tooltip.add(LieutenantClient.circleTooltipText());
+        tooltip.add(LieutenantClient.radiusTooltipText());
         tooltip.add(LieutenantClient.selectTooltipText());
         tooltip.add(LieutenantClient.selectReplaceTooltipText());
         tooltip.add(LieutenantClient.permissionTooltipText(2));
@@ -77,17 +77,10 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
             if (hit instanceof BlockHitResult blockHit) {
                 BlockPos target = getTarget(user, blockHit);
-                ItemPlacementContext placement = new ItemPlacementContext(world, user, hand, stack, blockHit);
-                BlockState state;
                 ItemStack offStack = user.getOffHandStack();
+                RegistryKey<Block> fill = Registries.BLOCK.getKey(!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem ? blockItem.getBlock() : Blocks.AIR).orElseThrow();
 
-                if (!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem) {
-                    state = blockItem.getBlock().getPlacementState(placement);
-                } else {
-                    state = Blocks.AIR.getPlacementState(placement);
-                }
-
-                ClientPlayNetworking.send(new CircleC2SPacket(target, state, radius, Optional.ofNullable(replace)));
+                ClientPlayNetworking.send(new CircleC2SPacket(target, fill, radius, Optional.ofNullable(replace)));
 
                 return TypedActionResult.success(stack);
             }
