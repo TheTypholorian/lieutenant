@@ -1,4 +1,4 @@
-package net.typho.lieutenant.client;
+package net.typho.lieutenant.input;
 
 import net.minecraft.item.ItemStack;
 

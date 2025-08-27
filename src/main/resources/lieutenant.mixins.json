@@ -4,20 +4,20 @@
   "package": "net.typho.lieutenant.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "CloneCommandMixin",
-    "CommandSourceMixin",
-    "DrawCommandMixin",
-    "EnchantCommandMixin",
-    "FillCommandMixin",
-    "PlaceCommandMixin",
-    "PlayerEntityMixin",
-    "TeleportCommandMixin"
+    "popups.CommandSourceMixin",
+    "qol.EnchantCommandMixin",
+    "qol.PlayerEntityMixin",
+    "qol.TeleportCommandMixin",
+    "tools.CloneCommandMixin",
+    "tools.DrawCommandMixin",
+    "tools.FillCommandMixin",
+    "tools.PlaceCommandMixin"
   ],
   "client": [
-    "ChatInputSuggestorWindowMixin",
-    "InGameHudMixin",
-    "MinecraftClientMixin",
-    "PlayerInventoryMixin"
+    "input.InGameHudMixin",
+    "input.MinecraftClientMixin",
+    "input.PlayerInventoryMixin",
+    "popups.ChatInputSuggestorWindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

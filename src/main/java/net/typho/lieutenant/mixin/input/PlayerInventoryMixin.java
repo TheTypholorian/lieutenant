@@ -1,12 +1,12 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.input;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.typho.lieutenant.AltScrollItem;
 import net.typho.lieutenant.client.LieutenantClient;
+import net.typho.lieutenant.input.AltScrollItem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

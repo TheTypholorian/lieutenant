@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.input;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;

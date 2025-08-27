@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.tools;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -21,21 +21,23 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
+import net.typho.lieutenant.input.*;
+import net.typho.lieutenant.packets.CircleC2SPacket;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem {
-    @Environment(EnvType.CLIENT)
-    public BlockPos target;
+public class CircleItem extends Item implements SelectionItem, AlwaysDisplayNameItem, CustomPickItem, TargetedItem, AltScrollItem {
     @Environment(EnvType.CLIENT)
     public RegistryKey<Block> replace;
+    @Environment(EnvType.CLIENT)
+    public int radius;
 
-    public FillItem(Settings settings) {
+    public CircleItem(Settings settings) {
         super(settings);
     }
 
@@ -44,16 +46,23 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
         return Text.translatable(
                 getTranslationKey(stack),
                 LieutenantClient.blockTooltipText(Objects.requireNonNull(MinecraftClient.getInstance().player).getOffHandStack().getItem() instanceof BlockItem block ? block.getBlock() : Blocks.AIR),
+                radius,
                 LieutenantClient.blockTooltipText(replace)
         );
     }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        tooltip.add(LieutenantClient.fillTooltipText());
+        tooltip.add(LieutenantClient.circleTooltipText());
+        tooltip.add(LieutenantClient.radiusTooltipText());
         tooltip.add(LieutenantClient.selectTooltipText());
         tooltip.add(LieutenantClient.selectReplaceTooltipText());
         tooltip.add(LieutenantClient.permissionTooltipText(2));
+    }
+
+    @Override
+    public void scroll(PlayerEntity player, ItemStack stack, double amount) {
+        radius = MathHelper.clamp(radius + (int) Math.signum(amount), 0, 256);
     }
 
     @Override
@@ -68,18 +77,11 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
             HitResult hit = user.raycast(32, 1f, false);
 
             if (hit instanceof BlockHitResult blockHit) {
-                BlockPos selected = getTarget(user, blockHit);
+                BlockPos target = getTarget(user, blockHit);
+                ItemStack offStack = user.getOffHandStack();
+                RegistryKey<Block> fill = Registries.BLOCK.getKey(!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem ? blockItem.getBlock() : Blocks.AIR).orElseThrow();
 
-                if (target == null) {
-                    target = selected;
-                } else {
-                    ItemStack offStack = user.getOffHandStack();
-                    RegistryKey<Block> fill = Registries.BLOCK.getKey(!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem ? blockItem.getBlock() : Blocks.AIR).orElseThrow();
-
-                    ClientPlayNetworking.send(new FillC2SPacket(BlockBox.create(target, selected), fill, Optional.ofNullable(replace)));
-
-                    target = null;
-                }
+                ClientPlayNetworking.send(new CircleC2SPacket(target, fill, radius, Optional.ofNullable(replace)));
 
                 return TypedActionResult.success(stack);
             }
@@ -96,19 +98,15 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
 
     @Override
     public void clearSelection(PlayerEntity player, World world, ItemStack stack) {
-        if (world.isClient) {
-            target = null;
-        }
     }
 
     @Override
     public BlockBox getSelection(PlayerEntity player, ItemStack wand, BlockHitResult hit) {
-        BlockPos target = getTarget(player, hit);
+        return new BlockBox(getTarget(player, hit)).expand(radius);
+    }
 
-        if (this.target == null) {
-            return new BlockBox(target);
-        }
-
-        return BlockBox.create(this.target, target);
+    @Override
+    public boolean canSelectSelf() {
+        return false;
     }
 }

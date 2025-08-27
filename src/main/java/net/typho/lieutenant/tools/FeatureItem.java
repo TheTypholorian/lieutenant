@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.tools;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,8 +17,11 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
+import net.typho.lieutenant.input.AlwaysDisplayNameItem;
+import net.typho.lieutenant.input.SelectionItem;
+import net.typho.lieutenant.input.TargetedItem;
+import net.typho.lieutenant.packets.PlaceFeatureC2SPacket;
 
 import java.util.List;
 

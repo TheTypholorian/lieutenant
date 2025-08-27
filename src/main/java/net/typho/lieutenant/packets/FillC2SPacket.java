@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.packets;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
+import net.typho.lieutenant.Lieutenant;
 
 import java.util.Optional;
 

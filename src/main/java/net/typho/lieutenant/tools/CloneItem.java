@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.tools;
 
 import com.google.common.collect.Lists;
 import net.fabricmc.api.EnvType;
@@ -26,8 +26,13 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.typho.lieutenant.client.AlwaysDisplayNameItem;
 import net.typho.lieutenant.client.LieutenantClient;
+import net.typho.lieutenant.input.AltScrollItem;
+import net.typho.lieutenant.input.AlwaysDisplayNameItem;
+import net.typho.lieutenant.input.DualSelectionItem;
+import net.typho.lieutenant.input.TargetedItem;
+import net.typho.lieutenant.packets.CloneC2SPacket;
+import net.typho.lieutenant.packets.CloneType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

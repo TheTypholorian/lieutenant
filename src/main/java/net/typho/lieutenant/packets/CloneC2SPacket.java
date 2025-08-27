@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.packets;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,6 +8,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.typho.lieutenant.Lieutenant;
 
 public record CloneC2SPacket(BlockBox copy, BlockPos paste, CloneType type) implements CustomPayload {
     public static final Id<CloneC2SPacket> ID = new Id<>(Identifier.of(Lieutenant.MOD_ID, "clone"));

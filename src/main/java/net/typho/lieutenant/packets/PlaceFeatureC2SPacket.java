@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.packets;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,6 +10,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
+import net.typho.lieutenant.Lieutenant;
 
 public record PlaceFeatureC2SPacket(BlockPos target, RegistryKey<ConfiguredFeature<?, ?>> feature) implements CustomPayload {
     public static final Id<PlaceFeatureC2SPacket> ID = new Id<>(Identifier.of(Lieutenant.MOD_ID, "place_feature"));

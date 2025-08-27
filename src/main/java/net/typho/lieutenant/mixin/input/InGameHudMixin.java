@@ -1,10 +1,10 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.input;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.item.ItemStack;
-import net.typho.lieutenant.client.AlwaysDisplayNameItem;
+import net.typho.lieutenant.input.AlwaysDisplayNameItem;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

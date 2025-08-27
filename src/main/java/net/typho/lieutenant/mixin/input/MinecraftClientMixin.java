@@ -1,4 +1,4 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.input;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.block.BlockState;
@@ -10,8 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.typho.lieutenant.CustomPickItem;
-import net.typho.lieutenant.SelectionItem;
+import net.typho.lieutenant.input.CustomPickItem;
+import net.typho.lieutenant.input.SelectionItem;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

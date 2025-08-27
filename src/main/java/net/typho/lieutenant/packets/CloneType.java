@@ -1,4 +1,4 @@
-package net.typho.lieutenant;
+package net.typho.lieutenant.packets;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;

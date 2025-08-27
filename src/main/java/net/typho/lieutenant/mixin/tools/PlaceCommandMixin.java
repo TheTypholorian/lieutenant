@@ -1,4 +1,4 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.tools;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -12,7 +12,7 @@ import net.minecraft.server.command.PlaceCommand;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.typho.lieutenant.Lieutenant;
-import net.typho.lieutenant.SetFeatureS2CPacket;
+import net.typho.lieutenant.packets.SetFeatureS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -1,4 +1,4 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.qol;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;

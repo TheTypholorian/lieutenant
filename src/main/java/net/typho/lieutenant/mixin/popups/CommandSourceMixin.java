@@ -1,4 +1,4 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.popups;
 
 import net.minecraft.command.CommandSource;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,4 +1,4 @@
-package net.typho.lieutenant.mixin;
+package net.typho.lieutenant.mixin.popups;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;

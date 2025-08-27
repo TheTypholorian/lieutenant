@@ -26,10 +26,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.typho.lieutenant.CloneType;
 import net.typho.lieutenant.Lieutenant;
-import net.typho.lieutenant.SelectionItem;
-import net.typho.lieutenant.SetFeatureS2CPacket;
+import net.typho.lieutenant.input.SelectionItem;
+import net.typho.lieutenant.packets.CloneType;
+import net.typho.lieutenant.packets.SetFeatureS2CPacket;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
