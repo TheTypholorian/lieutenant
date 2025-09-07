@@ -76,8 +76,8 @@ public class CircleItem extends Item implements SelectionItem, AlwaysDisplayName
 
             HitResult hit = user.raycast(32, 1f, false);
 
-            if (hit instanceof BlockHitResult blockHit) {
-                BlockPos target = getTarget(user, blockHit);
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                BlockPos target = getTarget(user, (BlockHitResult) hit);
                 ItemStack offStack = user.getOffHandStack();
                 RegistryKey<Block> fill = Registries.BLOCK.getKey(!offStack.isEmpty() && offStack.getItem() instanceof BlockItem blockItem ? blockItem.getBlock() : Blocks.AIR).orElseThrow();
 

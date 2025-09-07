@@ -71,8 +71,8 @@ public class FillItem extends Item implements SelectionItem, AlwaysDisplayNameIt
 
             HitResult hit = user.raycast(32, 1f, false);
 
-            if (hit instanceof BlockHitResult blockHit) {
-                BlockPos selected = getTarget(user, blockHit);
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                BlockPos selected = getTarget(user, (BlockHitResult) hit);
 
                 if (target == null) {
                     target = selected;

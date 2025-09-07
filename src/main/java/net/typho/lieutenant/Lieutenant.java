@@ -7,7 +7,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
@@ -18,7 +20,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -75,16 +80,18 @@ public class Lieutenant implements ModInitializer {
                 if (fill.isEmpty()) {
                     context.player().sendMessage(Text.translatable("error.lieutenant.nonexistent_block", packet.fill()).formatted(Formatting.RED), true);
                 } else {
-                    BlockState state = fill.get().getDefaultState();
+                    if (context.player().raycast(32, 1f, false) instanceof BlockHitResult blockHit && blockHit.getType() == HitResult.Type.BLOCK) {
+                        BlockState state = fill.get().getPlacementState(new ItemPlacementContext(new ItemUsageContext(context.player(), Hand.MAIN_HAND, blockHit)));
 
-                    if (packet.replace().isEmpty()) {
-                        for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
-                            world.setBlockState(blockPos, state);
-                        }
-                    } else {
-                        for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
-                            if (world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
+                        if (packet.replace().isEmpty()) {
+                            for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
                                 world.setBlockState(blockPos, state);
+                            }
+                        } else {
+                            for (BlockPos blockPos : BlockPos.iterate(packet.box().getMinX(), packet.box().getMinY(), packet.box().getMinZ(), packet.box().getMaxX(), packet.box().getMaxY(), packet.box().getMaxZ())) {
+                                if (world.getBlockState(blockPos).matchesKey(packet.replace().get())) {
+                                    world.setBlockState(blockPos, state);
+                                }
                             }
                         }
                     }

@@ -24,6 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.typho.lieutenant.Lieutenant;
@@ -365,18 +366,22 @@ public class LieutenantClient implements ClientModInitializer {
             if (player != null) {
                 ItemStack held = player.getMainHandStack();
 
-                if (held.getItem() instanceof SelectionItem selection && player.raycast(32, 1f, false) instanceof BlockHitResult blockHit) {
-                    MatrixStack matrices = Objects.requireNonNull(context.matrixStack());
-                    Vec3d cam = context.camera().getPos();
+                if (held.getItem() instanceof SelectionItem selection) {
+                    HitResult raycast = player.raycast(32, 1f, false);
 
-                    matrices.push();
-                    matrices.translate(-cam.x, -cam.y, -cam.z);
+                    if (raycast.getType() == HitResult.Type.BLOCK) {
+                        MatrixStack matrices = Objects.requireNonNull(context.matrixStack());
+                        Vec3d cam = context.camera().getPos();
 
-                    selection.renderSelection(matrices, Objects.requireNonNull(context.consumers()).getBuffer(RenderLayer.getLines()), player, held, blockHit);
+                        matrices.push();
+                        matrices.translate(-cam.x, -cam.y, -cam.z);
 
-                    matrices.pop();
+                        selection.renderSelection(matrices, Objects.requireNonNull(context.consumers()).getBuffer(RenderLayer.getLines()), player, held, (BlockHitResult) raycast);
 
-                    return false;
+                        matrices.pop();
+
+                        return false;
+                    }
                 }
             }
 

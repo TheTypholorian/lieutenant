@@ -74,8 +74,8 @@ public class CloneItem extends Item implements DualSelectionItem, TargetedItem, 
 
             HitResult hit = user.raycast(32, 1f, false);
 
-            if (hit instanceof BlockHitResult blockHit) {
-                BlockPos target = getTarget(user, blockHit);
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                BlockPos target = getTarget(user, (BlockHitResult) hit);
 
                 if (selection == null) {
                     selection = new BlockBox(target);

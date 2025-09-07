@@ -65,8 +65,8 @@ public class FeatureItem extends Item implements SelectionItem, AlwaysDisplayNam
 
             HitResult hit = user.raycast(32, 1f, false);
 
-            if (hit instanceof BlockHitResult blockHit) {
-                ClientPlayNetworking.send(new PlaceFeatureC2SPacket(getTarget(user, blockHit), feature));
+            if (hit.getType() == HitResult.Type.BLOCK) {
+                ClientPlayNetworking.send(new PlaceFeatureC2SPacket(getTarget(user, (BlockHitResult) hit), feature));
 
                 return TypedActionResult.success(stack);
             }
